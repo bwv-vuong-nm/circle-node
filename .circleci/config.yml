@@ -4,7 +4,7 @@ version: 2.1
 orbs: # là nơi khai báo cmd line được hỗ trợ bởi circle 
   # sử dụng cmd line của node 
   node: circleci/node@3.0.0
-  slack: circleci/slack@4.4.0
+  slack: circleci/slack@4.1
 jobs:
   check:
     docker:
@@ -20,22 +20,55 @@ jobs:
           paths:
           - node_modules
       - slack/notify:
+          event: fail
           custom: |
             {
               "blocks": [
                 {
+                  "type": "divider"
+                },
+                {
                   "type": "section",
-                  "fields": [
-                    {
-                      "type": "plain_text",
-                      "text": "*This is a text notification*",
-                      "emoji": true
-                    }
-                  ]
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Testing failure ! :skull: *\n:star: \n \n Here is notification from circleCI"
+                  },
+                  "accessory": {
+                    "type": "image",
+                    "image_url": "https://assets.brandfolder.com/q1z07w-113hxk-b29oc1/v/7755924/original/fail-build.png",
+                    "alt_text": "c"
+                  }
+                },
+                {
+                  "type": "divider"
                 }
               ]
             }
-          event: always
+      - slack/notify:
+          event: pass
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Testing Successful ! :tada: *\n:star::star::star::star: \n \n Here is notification from circleCI"
+                  },
+                  "accessory": {
+                    "type": "image",
+                    "image_url": "https://assets.brandfolder.com/q1yzlj-eypchs-3zozet/v/7755881/original/green-build.png",
+                    "alt_text": "c"
+                  }
+                },
+                {
+                  "type": "divider"
+                }
+              ]
+            }
   deploy-aws:
     machine:
       enabled: true
@@ -55,11 +88,61 @@ jobs:
           name: deploy main to heroku
           command: |
             git push https://heroku:$MY_API_KEY@git.heroku.com/demo-node-circleci.git main
+      - slack/notify:
+          event: fail
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Deployment failure ! :skull: *\n:star: \n \n Here is notification from circleCI"
+                  },
+                  "accessory": {
+                    "type": "image",
+                    "image_url": "https://assets.brandfolder.com/q1z07w-113hxk-b29oc1/v/7755924/original/fail-build.png",
+                    "alt_text": "c"
+                  }
+                },
+                {
+                  "type": "divider"
+                }
+              ]
+            }
+      - slack/notify:
+          event: pass
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Deployment Successful ! :tada: *\n:star::star::star::star: \n \n Here is notification from circleCI"
+                  },
+                  "accessory": {
+                    "type": "image",
+                    "image_url": "https://assets.brandfolder.com/q1yzlj-eypchs-3zozet/v/7755881/original/green-build.png",
+                    "alt_text": "c"
+                  }
+                },
+                {
+                  "type": "divider"
+                }
+              ]
+            }
 workflows:
   my-flow:
     jobs:
       - check:
-          context: slack-secrets
+          context: vuong
       - deploy-deroku:
           requires: 
             - check
@@ -67,5 +150,4 @@ workflows:
             branches:
               only:
                 - main
-
-# restore_cache & save_cache : Khôi phục bộ đệm đã lưu trước đó dựa trên key . Ở đây mục đích muốn giữ lại node_modules để không phải tạo lại mỗi lần chạy npm install
+          context: vuong
